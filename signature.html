@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctor Signature</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+        background-color: #f3f4f6;
+    }
+    h2 {
+        margin-bottom: 10px;
+    }
+    canvas {
+        border: 2px dashed #64748b;
+        border-radius: 8px;
+        background: white;
+        touch-action: none; /* Prevent scrolling while drawing */
+    }
+    button {
+        margin: 10px 5px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .primary {
+        background-color: #2563eb;
+        color: white;
+    }
+    .secondary {
+        background-color: #e5e7eb;
+    }
+</style>
+</head>
+<body>
+
+<h2>Sign Here</h2>
+<canvas id="sigCanvas" width="500" height="200"></canvas>
+
+<div>
+    <button class="secondary" id="clearBtn">Clear</button>
+    <button class="primary" id="saveBtn">Save as PNG</button>
+</div>
+
+<script>
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+
+let drawing = false;
+let lastX = 0;
+let lastY = 0;
+
+// Set up pen
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+ctx.strokeStyle = 'black';
+
+// Mouse & touch events
+function startPosition(e) {
+    drawing = true;
+    [lastX, lastY] = getXY(e);
+}
+function endPosition() {
+    drawing = false;
+}
+function draw(e) {
+    if (!drawing) return;
+    const [x, y] = getXY(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function getXY(e) {
+    if (e.touches) {
+        const rect = canvas.getBoundingClientRect();
+        return [
+            e.touches[0].clientX - rect.left,
+            e.touches[0].clientY - rect.top
+        ];
+    } else {
+        return [e.offsetX, e.offsetY];
+    }
+}
+
+// Event listeners
+canvas.addEventListener('mousedown', startPosition);
+canvas.addEventListener('mouseup', endPosition);
+canvas.addEventListener('mousemove', draw);
+
+canvas.addEventListener('touchstart', startPosition);
+canvas.addEventListener('touchend', endPosition);
+canvas.addEventListener('touchmove', draw);
+
+// Buttons
+document.getElementById('clearBtn').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'doctor_signature.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+});
+</script>
+
+</body>
+</html>
